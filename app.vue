@@ -73,14 +73,12 @@ const canPlacePiece = computed(() => {
     for (let j = 0; j < activePiece.value[0].length; j++) {
       if (
         activePiece.value[i][j] &&
-        (pieceX.value / gridDimension.value + j < 0 ||
-          pieceX.value / gridDimension.value + j >= 9 ||
-          pieceY.value / gridDimension.value + i < 0 ||
-          pieceY.value / gridDimension.value + i >= 9 ||
-          occupiedCells.value[
-            (pieceX.value / gridDimension.value + j) * 9 +
-              (pieceY.value / gridDimension.value + i)
-          ] !== undefined)
+        (pieceX.value + j < 0 ||
+          pieceX.value + j >= 9 ||
+          pieceY.value + i < 0 ||
+          pieceY.value + i >= 9 ||
+          occupiedCells.value[(pieceX.value + j) * 9 + (pieceY.value + i)] !==
+            undefined)
       ) {
         return false;
       }
@@ -94,91 +92,64 @@ const placePiece = async () => {
     return;
   }
   placedPieces.value.push({
-    x: pieceX.value / gridDimension.value,
-    y: pieceY.value / gridDimension.value,
+    x: pieceX.value,
+    y: pieceY.value,
     piece: activePiece.value.map((row) => [...row]),
     colour: turn.value === 0 ? "orange" : "yellow",
   });
   for (let i = 0; i < activePiece.value.length; i++) {
     for (let j = 0; j < activePiece.value[0].length; j++) {
       if (activePiece.value[i][j]) {
-        occupiedCells.value[
-          (pieceX.value / gridDimension.value + j) * 9 +
-            (pieceY.value / gridDimension.value + i)
-        ] = placedPieces.value.length - 1;
+        occupiedCells.value[(pieceX.value + j) * 9 + (pieceY.value + i)] =
+          placedPieces.value.length - 1;
       }
     }
   }
-  // if the active piece touches any other piece, that other piece flips colour to the colour of the active piece
-  let touchingPieces = [];
+  const touchingPieces = [];
   for (let i = 0; i < activePiece.value.length; i++) {
     for (let j = 0; j < activePiece.value[0].length; j++) {
       if (activePiece.value[i][j]) {
         if (
-          pieceY.value / gridDimension.value + i - 1 >= 0 &&
-          (pieceX.value / gridDimension.value + j) * 9 +
-            (pieceY.value / gridDimension.value + i - 1) in
-            occupiedCells.value
+          pieceY.value + i - 1 >= 0 &&
+          (pieceX.value + j) * 9 + (pieceY.value + i - 1) in occupiedCells.value
         ) {
           touchingPieces.push(
-            occupiedCells.value[
-              (pieceX.value / gridDimension.value + j) * 9 +
-                (pieceY.value / gridDimension.value + i - 1)
-            ]
+            occupiedCells.value[(pieceX.value + j) * 9 + (pieceY.value + i - 1)]
           );
         }
         if (
-          pieceY.value / gridDimension.value + i + 1 < 9 &&
-          (pieceX.value / gridDimension.value + j) * 9 +
-            (pieceY.value / gridDimension.value + i + 1) in
-            occupiedCells.value
+          pieceY.value + i + 1 < 9 &&
+          (pieceX.value + j) * 9 + (pieceY.value + i + 1) in occupiedCells.value
         ) {
           touchingPieces.push(
-            occupiedCells.value[
-              (pieceX.value / gridDimension.value + j) * 9 +
-                (pieceY.value / gridDimension.value + i + 1)
-            ]
+            occupiedCells.value[(pieceX.value + j) * 9 + (pieceY.value + i + 1)]
           );
         }
         if (
-          pieceX.value / gridDimension.value + j - 1 >= 0 &&
-          (pieceX.value / gridDimension.value + j - 1) * 9 +
-            (pieceY.value / gridDimension.value + i) in
-            occupiedCells.value
+          pieceX.value + j - 1 >= 0 &&
+          (pieceX.value + j - 1) * 9 + (pieceY.value + i) in occupiedCells.value
         ) {
           touchingPieces.push(
-            occupiedCells.value[
-              (pieceX.value / gridDimension.value + j - 1) * 9 +
-                (pieceY.value / gridDimension.value + i)
-            ]
+            occupiedCells.value[(pieceX.value + j - 1) * 9 + (pieceY.value + i)]
           );
         }
         if (
-          pieceX.value / gridDimension.value + j + 1 < 9 &&
-          (pieceX.value / gridDimension.value + j + 1) * 9 +
-            (pieceY.value / gridDimension.value + i) in
-            occupiedCells.value
+          pieceX.value + j + 1 < 9 &&
+          (pieceX.value + j + 1) * 9 + (pieceY.value + i) in occupiedCells.value
         ) {
           touchingPieces.push(
-            occupiedCells.value[
-              (pieceX.value / gridDimension.value + j + 1) * 9 +
-                (pieceY.value / gridDimension.value + i)
-            ]
+            occupiedCells.value[(pieceX.value + j + 1) * 9 + (pieceY.value + i)]
           );
         }
       }
     }
   }
-  // eliminate duplicates
-  touchingPieces = [...new Set(touchingPieces)];
-  // remove the active piece from the list of touching pieces
-  touchingPieces = touchingPieces.filter(
-    (piece) => piece !== placedPieces.value.length - 1
-  );
-  // flip the colour of the touching pieces
-  touchingPieces.forEach((piece) => {
-    placedPieces.value[piece].colour = activeColour.value;
-  });
+  // remove duplicates, remove the piece that was just placed, and set the colour of the touching pieces
+  [...new Set(touchingPieces)]
+    .filter((piece) => piece !== placedPieces.value.length - 1)
+    .forEach((piece) => {
+      placedPieces.value[piece].colour = activeColour.value;
+    });
   pieceCounts.value[turn.value][pieceChoiceIndex.value]--;
   turn.value = turn.value === 0 ? 1 : 0;
   pieceX.value = 0;
@@ -210,8 +181,8 @@ const rotatePieces = async () => {
 };
 
 const onDrag = (x, y) => {
-  pieceX.value = x;
-  pieceY.value = y;
+  pieceX.value = x / gridDimension.value;
+  pieceY.value = y / gridDimension.value;
 };
 </script>
 
@@ -282,8 +253,8 @@ const onDrag = (x, y) => {
         :resizable="false"
         :w="activePieceWidth"
         :h="activePieceHeight"
-        :x="pieceX"
-        :y="pieceY"
+        :x="pieceX * gridDimension"
+        :y="pieceY * gridDimension"
         @dragging="onDrag"
         class-name="border-0"
       >
