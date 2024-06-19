@@ -1,75 +1,23 @@
-# Nuxt 3 Minimal Starter
+# Chameleon game
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Based on the board game Chameleon by Waddingtons.
 
-## Setup
+## Rules
 
-Make sure to install the dependencies:
+Take turn placing tiles on the grid. If you place a tile touching another tile of the opposite colour, the other tile changes to your colour. The game ends when neither player can place a tile. The player with the most squares of their colour at the end of the game wins.
 
+## Running the game
+
+Use `nuxi-docker` to run the game.
+
+When first installed:
 ```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
+npx nuxi-docker yarn install
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
+To run the game:
 ```bash
-# npm
-npm run dev
+npx nuxi-docker up -d
 
-# pnpm
-pnpm run dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
+npx nuxi-docker dev
 ```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm run build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm run preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
