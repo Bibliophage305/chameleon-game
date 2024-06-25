@@ -1,0 +1,29 @@
+<script setup>
+const { humanPlayer, computerPlayer } = usePlayer();
+const { pieceChoices, pieceCounts } = useGame();
+const humanPlaysFirst = Math.round(Math.random());
+let playerOne, playerTwo;
+if (humanPlaysFirst) {
+  playerOne = humanPlayer("Player", "orange", pieceChoices(), pieceCounts());
+  playerTwo = computerPlayer(
+    "Computer",
+    "yellow",
+    pieceChoices(),
+    pieceCounts()
+  );
+} else {
+  playerOne = computerPlayer(
+    "Computer",
+    "orange",
+    pieceChoices(),
+    pieceCounts()
+  );
+  playerTwo = humanPlayer("Player", "yellow", pieceChoices(), pieceCounts());
+}
+</script>
+
+<template>
+  <ClientOnly>
+    <Game :playerOne="playerOne" :playerTwo="playerTwo" />
+  </ClientOnly>
+</template>
