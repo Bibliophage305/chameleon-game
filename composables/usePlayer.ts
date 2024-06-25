@@ -36,14 +36,14 @@ const playerFactory = () => {
   ) {
     const isHuman = playerType === PlayerType.Human;
     const isComputer = playerType === PlayerType.Computer;
-    const getAvailablePieces = () => {
-      const availablePieces = [];
+    const availablePieces = computed(() => {
+      const ret = [];
       for (let i = 0; i < piecesLeft.value.length; i++) {
         if (piecesLeft.value[i] > 0) {
           // make a deep copy of pieces.value[i]
           let piece = JSON.parse(JSON.stringify(pieces.value[i]));
           for (let rotation = 0; rotation < 4; rotation++) {
-            availablePieces.push(piece);
+            ret.push(piece);
             const newPiece = [];
             for (let rowIndex = 0; rowIndex < piece[0].length; rowIndex++) {
               const newRow = [];
@@ -60,8 +60,8 @@ const playerFactory = () => {
           }
         }
       }
-      return removeDuplicates(availablePieces);
-    };
+      return removeDuplicates(ret);
+    });
     const reducePiece = (pieceIndex: number) => {
       piecesLeft.value[pieceIndex] -= 1;
     };
@@ -74,7 +74,7 @@ const playerFactory = () => {
       isHuman,
       isComputer,
       reducePiece,
-      getAvailablePieces,
+      availablePieces,
     };
   };
 };

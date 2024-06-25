@@ -1,13 +1,13 @@
 <script setup>
 const { humanPlayer } = usePlayer();
-const { pieceChoices, pieceCounts } = useGame();
+const { pieceChoices, pieceCounts, constructGame } = useGame();
 const playerOne = humanPlayer("Player 1", "orange", pieceChoices(), pieceCounts());
 const playerTwo = humanPlayer("Player 2", "yellow", pieceChoices(), pieceCounts());
-
+const game = constructGame(playerOne, playerTwo);
 </script>
 
 <template>
   <ClientOnly>
-    <Game :playerOne="playerOne" :playerTwo="playerTwo" />
+    <Game :game="game" />
   </ClientOnly>
 </template>

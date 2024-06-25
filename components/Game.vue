@@ -2,25 +2,19 @@
 import VueDraggableResizable from "vue-draggable-resizable";
 
 const props = defineProps({
-  playerOne: Object,
-  playerTwo: Object,
+  game: Object,
 });
+
+console.log(props.game.isOver.value)
 
 const thinking = ref(false);
 
 const skippingTurn = ref(false);
 
-const gameIsOver = ref(false);
-
-const { constructGame } = useGame();
-const game = constructGame(props.playerOne, props.playerTwo);
-
-const activePlayer = computed(() => game.getActivePlayer());
-
 const pieceChoiceIndex = ref(0);
 
 const activePiece = computed(
-  () => activePlayer.value.pieces.value[pieceChoiceIndex.value]
+  () => props.game.activePlayer.value.pieces.value[pieceChoiceIndex.value]
 );
 
 const gridCellPixels = ref(50);
@@ -39,7 +33,7 @@ const choosePiece = (index) => {
   if (index === pieceChoiceIndex.value) {
     return;
   }
-  if (activePlayer.value.piecesLeft.value[index] === 0) {
+  if (props.game.activePlayer.value.piecesLeft.value[index] === 0) {
     return;
   }
   pieceChoiceIndex.value = index;
@@ -49,11 +43,11 @@ const choosePiece = (index) => {
 
 const canPlacePiece = computed(() =>
   // passing turn is unnecessary, but incrementing it forces the computed prop to update
-  game.canPlacePiece(
+  props.game.canPlacePiece(
     pieceX.value,
     pieceY.value,
     activePiece.value,
-    game.turn.value
+    props.game.turn.value
   )
 );
 
@@ -65,21 +59,21 @@ const placeActivePiece = async () => {
     pieceX.value,
     pieceY.value,
     activePiece.value,
-    activePlayer.value.colour
+    props.game.activePlayer.value.colour
   );
 };
 
 const placePiece = async (x, y, piece, colour) => {
-  game.placePiece(x, y, piece, colour);
-  activePlayer.value.reducePiece(pieceChoiceIndex.value);
-  game.nextTurn();
+  props.game.placePiece(x, y, piece, colour);
+  props.game.activePlayer.value.reducePiece(pieceChoiceIndex.value);
+  props.game.nextTurn();
   pieceX.value = 0;
   pieceY.value = 0;
   // have to wait for the x and y to actually update, otherwise it might spawn the new piece in a
   // limited area and break the height and width restrictions
   await nextTick();
   pieceChoiceIndex.value = 0;
-  while (activePlayer.value.piecesLeft.value[pieceChoiceIndex.value] === 0) {
+  while (props.game.activePlayer.value.piecesLeft.value[pieceChoiceIndex.value] === 0) {
     pieceChoiceIndex.value++;
   }
   await updateGame();
@@ -88,7 +82,7 @@ const placePiece = async (x, y, piece, colour) => {
 const skipTurn = async () => {
   skippingTurn.value = true;
   await new Promise((resolve) => setTimeout(resolve, 1000));
-  game.nextTurn();
+  props.game.nextTurn();
   skippingTurn.value = false;
   await updateGame();
 };
@@ -97,7 +91,7 @@ const rotatePieces = async () => {
   pieceX.value = 0;
   pieceY.value = 0;
   await nextTick();
-  activePlayer.value.pieces.value.forEach((piece, index) => {
+  props.game.activePlayer.value.pieces.value.forEach((piece, index) => {
     const newPiece = [];
     for (let i = 0; i < piece[0].length; i++) {
       const newRow = [];
@@ -106,7 +100,7 @@ const rotatePieces = async () => {
       }
       newPiece.push(newRow);
     }
-    activePlayer.value.pieces.value[index] = newPiece;
+    props.game.activePlayer.value.pieces.value[index] = newPiece;
   });
 };
 
@@ -116,18 +110,17 @@ const onDrag = (x, y) => {
 };
 
 const updateGame = async () => {
-  if (game.gameIsOver()) {
-    gameIsOver.value = true;
+  if (props.game.isOver.value) {
     return;
   }
-  if (!game.activePlayerCanMove()) {
+  if (!props.game.activePlayerCanMove.value) {
     skipTurn();
     return;
   }
-  if (activePlayer.value.isComputer) {
+  if (props.game.activePlayer.value.isComputer) {
     thinking.value = true;
-    const { x, y, piece } = await game.computerMove();
-    placePiece(x, y, piece, activePlayer.value.colour);
+    const { x, y, piece } = await props.game.computerMove();
+    placePiece(x, y, piece, props.game.activePlayer.value.colour);
     thinking.value = false;
   }
 };
@@ -142,26 +135,26 @@ await updateGame();
 <template>
   <div class="flex flex-col w-full h-screen justify-center items-center">
     <div class="flex flex-row gap-2">
-      <span v-if="!gameIsOver">{{ activePlayer.name }}'s turn</span>
+      <span v-if="!game.isOver.value">{{ game.activePlayer.value.name }}'s turn</span>
       <span v-if="thinking">Thinking...</span>
       <span v-if="skippingTurn">Can't go, skipping turn...</span>
-      <span v-if="gameIsOver">{{ game.getWinner().name }} wins!</span>
+      <span v-if="game.isOver.value">{{ game.getWinner()?.name }} wins!</span>
     </div>
     <div class="flex flex-row gap-2">
       <div class="grid grid-cols-8 justify-center items-center gap-2 h-24">
         <div
-          v-for="(piece, index) in activePlayer.pieces.value"
+          v-for="(piece, index) in game.activePlayer.value.pieces.value"
           :key="index"
           class="flex flex-col items-center justify-between w-20"
         >
           <Piece
             :cells="piece"
-            :colour="activePlayer.colour"
+            :colour="game.activePlayer.value.colour"
             :borderWeight="1"
             :cellClasses="'w-4 h-4'"
             @click="choosePiece(index)"
           />
-          x{{ activePlayer.piecesLeft.value[index] }}
+          x{{ game.activePlayer.value.piecesLeft.value[index] }}
         </div>
       </div>
       <button
@@ -200,7 +193,7 @@ await updateGame();
         <Piece :cells="piece.piece" :colour="piece.colour" />
       </div>
       <vue-draggable-resizable
-        v-if="!thinking && !skippingTurn && !gameIsOver"
+        v-if="!thinking && !skippingTurn && !game.isOver.value"
         :parent="true"
         :grid="[gridCellPixels, gridCellPixels]"
         :resizable="false"
@@ -213,7 +206,7 @@ await updateGame();
       >
         <Piece
           :cells="activePiece"
-          :colour="activePlayer.colour"
+          :colour="game.activePlayer.value.colour"
           :borderWeight="4"
           :borderColour="canPlacePiece ? 'black' : 'red'"
         />

@@ -3,12 +3,8 @@ const gameFactory = () => {
     const players = [playerOne, playerTwo];
     const turn = ref(0);
     const nextTurn = () => turn.value++;
-    const getActivePlayer = () => {
-      return players[turn.value % 2];
-    };
-    const getInactivePlayer = () => {
-      return players[(turn.value + 1) % 2];
-    }
+    const activePlayer = computed(() => players[turn.value % 2]);
+    const inactivePlayer = computed(() => players[(turn.value + 1) % 2]);
     const placedPieces: Array<any> = [];
     const occupiedCells: { [key: number]: number } = {};
     const placePiece = (
@@ -75,7 +71,7 @@ const gameFactory = () => {
 
     const legalMoves = (player: Object) => {
       const availableMoves = [];
-      for (const piece of player.getAvailablePieces()) {
+      for (const piece of player.availablePieces.value) {
         for (let x = 0; x < 9; x++) {
           for (let y = 0; y < 9; y++) {
             if (canPlacePiece(x, y, piece)) {
@@ -85,24 +81,24 @@ const gameFactory = () => {
         }
       }
       return availableMoves;
-    }
+    };
 
-    const activePlayerCanMove = () => {
-      return legalMoves(getActivePlayer()).length > 0;
-    }
+    const activePlayerCanMove = computed(
+      () => legalMoves(activePlayer.value).length > 0
+    );
 
-    const inactivePlayerCanMove = () => {
-      return legalMoves(getInactivePlayer()).length > 0;
-    }
+    const inactivePlayerCanMove = computed(
+      () => legalMoves(inactivePlayer.value).length > 0
+    );
 
-    const gameIsOver = () => {
-      return !activePlayerCanMove() && !inactivePlayerCanMove();
-    }
+    const isOver = computed(
+      () => !activePlayerCanMove.value && !inactivePlayerCanMove.value
+    );
 
     const computerMove = async () => {
       // wait one second before making a move
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      const availableMoves = legalMoves(getActivePlayer());
+      const availableMoves = legalMoves(activePlayer.value);
       const move =
         availableMoves[Math.floor(Math.random() * availableMoves.length)];
       return move;
@@ -125,13 +121,13 @@ const gameFactory = () => {
       } else {
         return null;
       }
-    }
+    };
 
     return {
       players,
-      getActivePlayer,
+      activePlayer,
       activePlayerCanMove,
-      getInactivePlayer,
+      inactivePlayer,
       inactivePlayerCanMove,
       placedPieces,
       placePiece,
@@ -140,7 +136,7 @@ const gameFactory = () => {
       turn,
       nextTurn,
       computerMove,
-      gameIsOver,
+      isOver,
       getWinner,
     };
   };
