@@ -8,7 +8,11 @@ const props = defineProps({
 
 const thinking = ref(false);
 
-const { pieceChoices, pieceCounts, constructGame } = useGame();
+const skippingTurn = ref(false);
+
+const gameIsOver = ref(false);
+
+const { constructGame } = useGame();
 const game = constructGame(props.playerOne, props.playerTwo);
 
 const activePlayer = computed(() => game.getActivePlayer());
@@ -81,6 +85,14 @@ const placePiece = async (x, y, piece, colour) => {
   await updateGame();
 };
 
+const skipTurn = async () => {
+  skippingTurn.value = true;
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  game.nextTurn();
+  skippingTurn.value = false;
+  await updateGame();
+};
+
 const rotatePieces = async () => {
   pieceX.value = 0;
   pieceY.value = 0;
@@ -104,6 +116,14 @@ const onDrag = (x, y) => {
 };
 
 const updateGame = async () => {
+  if (game.gameIsOver()) {
+    gameIsOver.value = true;
+    return;
+  }
+  if (!game.activePlayerCanMove()) {
+    skipTurn();
+    return;
+  }
   if (activePlayer.value.isComputer) {
     thinking.value = true;
     const { x, y, piece } = await game.computerMove();
@@ -122,8 +142,10 @@ await updateGame();
 <template>
   <div class="flex flex-col w-full h-screen justify-center items-center">
     <div class="flex flex-row gap-2">
-      <span>{{ activePlayer.name }}'s turn</span>
+      <span v-if="!gameIsOver">{{ activePlayer.name }}'s turn</span>
       <span v-if="thinking">Thinking...</span>
+      <span v-if="skippingTurn">Can't go, skipping turn...</span>
+      <span v-if="gameIsOver">{{ game.getWinner().name }} wins!</span>
     </div>
     <div class="flex flex-row gap-2">
       <div class="grid grid-cols-8 justify-center items-center gap-2 h-24">
@@ -178,7 +200,7 @@ await updateGame();
         <Piece :cells="piece.piece" :colour="piece.colour" />
       </div>
       <vue-draggable-resizable
-        v-if="!thinking"
+        v-if="!thinking && !skippingTurn && !gameIsOver"
         :parent="true"
         :grid="[gridCellPixels, gridCellPixels]"
         :resizable="false"

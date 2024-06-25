@@ -6,6 +6,9 @@ const gameFactory = () => {
     const getActivePlayer = () => {
       return players[turn.value % 2];
     };
+    const getInactivePlayer = () => {
+      return players[(turn.value + 1) % 2];
+    }
     const placedPieces: Array<any> = [];
     const occupiedCells: { [key: number]: number } = {};
     const placePiece = (
@@ -70,11 +73,9 @@ const gameFactory = () => {
       return true;
     };
 
-    const computerMove = async () => {
-      // wait one second before making a move
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+    const legalMoves = (player: Object) => {
       const availableMoves = [];
-      for (const piece of getActivePlayer().getAvailablePieces()) {
+      for (const piece of player.getAvailablePieces()) {
         for (let x = 0; x < 9; x++) {
           for (let y = 0; y < 9; y++) {
             if (canPlacePiece(x, y, piece)) {
@@ -83,15 +84,55 @@ const gameFactory = () => {
           }
         }
       }
-      // return a random move
+      return availableMoves;
+    }
+
+    const activePlayerCanMove = () => {
+      return legalMoves(getActivePlayer()).length > 0;
+    }
+
+    const inactivePlayerCanMove = () => {
+      return legalMoves(getInactivePlayer()).length > 0;
+    }
+
+    const gameIsOver = () => {
+      return !activePlayerCanMove() && !inactivePlayerCanMove();
+    }
+
+    const computerMove = async () => {
+      // wait one second before making a move
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const availableMoves = legalMoves(getActivePlayer());
       const move =
         availableMoves[Math.floor(Math.random() * availableMoves.length)];
       return move;
     };
 
+    const getWinner = () => {
+      let playerOneScore = 0;
+      let playerTwoScore = 0;
+      for (const piece of placedPieces) {
+        if (piece.colour === players[0].colour) {
+          playerOneScore += piece.piece.flat().filter((x) => x).length;
+        } else {
+          playerTwoScore += piece.piece.flat().filter((x) => x).length;
+        }
+      }
+      if (playerOneScore > playerTwoScore) {
+        return players[0];
+      } else if (playerTwoScore > playerOneScore) {
+        return players[1];
+      } else {
+        return null;
+      }
+    }
+
     return {
       players,
       getActivePlayer,
+      activePlayerCanMove,
+      getInactivePlayer,
+      inactivePlayerCanMove,
       placedPieces,
       placePiece,
       occupiedCells,
@@ -99,6 +140,8 @@ const gameFactory = () => {
       turn,
       nextTurn,
       computerMove,
+      gameIsOver,
+      getWinner,
     };
   };
 };

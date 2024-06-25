@@ -1,10 +1,11 @@
-// An enum to represent the player types, which are human and computer.
 enum PlayerType {
   Human,
   Computer,
 }
 
-const removeDuplicates = (nestedArray: Array<Array<Array<boolean>>>): Array<Array<Array<boolean>>> => {
+const removeDuplicates = (
+  nestedArray: Array<Array<Array<boolean>>>
+): Array<Array<Array<boolean>>> => {
   // Function to serialize an array to a string
   const serialize = (arr: Array<Array<boolean>>): string => JSON.stringify(arr);
 
@@ -15,15 +16,15 @@ const removeDuplicates = (nestedArray: Array<Array<Array<boolean>>>): Array<Arra
   const uniqueSet: Set<string> = new Set();
 
   // Loop through each sub-array and add its serialized version to the Set
-  nestedArray.forEach(subArray => {
-      uniqueSet.add(serialize(subArray));
+  nestedArray.forEach((subArray) => {
+    uniqueSet.add(serialize(subArray));
   });
 
   // Convert the Set back to an array of arrays
   const uniqueArray = Array.from(uniqueSet).map(deserialize);
 
   return uniqueArray;
-}
+};
 
 const playerFactory = () => {
   return function (
@@ -46,7 +47,11 @@ const playerFactory = () => {
             const newPiece = [];
             for (let rowIndex = 0; rowIndex < piece[0].length; rowIndex++) {
               const newRow = [];
-              for (let columnIndex = piece.length - 1; columnIndex >= 0; columnIndex--) {
+              for (
+                let columnIndex = piece.length - 1;
+                columnIndex >= 0;
+                columnIndex--
+              ) {
                 newRow.push(piece[columnIndex][rowIndex]);
               }
               newPiece.push(newRow);
