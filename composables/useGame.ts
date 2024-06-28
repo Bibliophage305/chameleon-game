@@ -1,12 +1,83 @@
+enum GameType {
+  LocalPVP,
+  Computer,
+  RemotePVP,
+}
+
 const gameFactory = () => {
-  return function (playerOne: Object, playerTwo: Object) {
+  return function (playerOne: Object, playerTwo: Object, gameType: GameType) {
     const players = [playerOne, playerTwo];
     const turn = ref(0);
+    const placedPieces: Array<any> = [];
+    const occupiedCells: { [key: number]: number } = {};
+
+    const setTurn = (value: number) => {
+      turn.value = value;
+    };
+
+    const setPlacedPieces = (pieces: Array<any>) => {
+      // clear the board
+      placedPieces.splice(0, placedPieces.length);
+      for (const key in occupiedCells) {
+        delete occupiedCells[key];
+      }
+      for (const piece of pieces) {
+        placePiece(piece.x, piece.y, piece.piece, piece.colour);
+      }
+    };
+
+    const setPlayers = (playerOne: Object, playerTwo: Object) => {
+      const { playerFactory } = usePlayer();
+      players[0] = playerFactory(
+        playerOne.playerType,
+        playerOne.name,
+        playerOne.colour,
+        ref(playerOne.pieces),
+        ref(playerOne.piecesLeft),
+        playerOne.playerID
+      );
+      players[1] = playerFactory(
+        playerTwo.playerType,
+        playerTwo.name,
+        playerTwo.colour,
+        ref(playerTwo.pieces),
+        ref(playerTwo.piecesLeft),
+        playerTwo.playerID
+      );
+    };
+
+    const toJson = () => {
+      const ret = {
+        players: players.map((player) => player.toJson()),
+        turn: turn.value,
+        placedPieces: placedPieces.map((piece) => ({
+          x: piece.x,
+          y: piece.y,
+          piece: piece.piece,
+          colour: piece.colour,
+        })),
+        occupiedCells: occupiedCells,
+        gameType: gameType,
+      };
+      return ret;
+    };
+
     const nextTurn = () => turn.value++;
     const activePlayer = computed(() => players[turn.value % 2]);
     const inactivePlayer = computed(() => players[(turn.value + 1) % 2]);
-    const placedPieces: Array<any> = [];
-    const occupiedCells: { [key: number]: number } = {};
+
+    const currentPlayersMove = computed(() => {
+      switch (gameType) {
+        case GameType.LocalPVP:
+          return activePlayer.value.isHuman;
+        case GameType.Computer:
+          return activePlayer.value.isHuman;
+        case GameType.RemotePVP:
+          const route = useRoute();
+          return route.params.id == activePlayer.value.playerID;
+      }
+    });
+
     const placePiece = (
       x: number,
       y: number,
@@ -138,6 +209,11 @@ const gameFactory = () => {
       computerMove,
       isOver,
       getWinner,
+      toJson,
+      currentPlayersMove,
+      setTurn,
+      setPlacedPieces,
+      setPlayers,
     };
   };
 };
@@ -178,5 +254,6 @@ export default function () {
     pieceCounts,
     pieceChoices,
     constructGame,
+    GameType,
   };
 }

@@ -1,6 +1,6 @@
 <script setup>
 const { humanPlayer, computerPlayer } = usePlayer();
-const { pieceChoices, pieceCounts, constructGame } = useGame();
+const { pieceChoices, pieceCounts, constructGame, GameType } = useGame();
 const humanPlaysFirst = Math.round(Math.random());
 let playerOne, playerTwo;
 if (humanPlaysFirst) {
@@ -20,7 +20,7 @@ if (humanPlaysFirst) {
   );
   playerTwo = humanPlayer("Player", "yellow", pieceChoices(), pieceCounts());
 }
-const game = constructGame(playerOne, playerTwo);
+const game = constructGame(playerOne, playerTwo, GameType.Computer);
 </script>
 
 <template>

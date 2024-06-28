@@ -32,8 +32,19 @@ const playerFactory = () => {
     name: string,
     colour: string,
     pieces: Ref<Array<Array<boolean>>>,
-    piecesLeft: Ref<Array<number>>
+    piecesLeft: Ref<Array<number>>,
+    playerID = ""
   ) {
+    const toJson = () => {
+      return {
+        name,
+        colour,
+        pieces: pieces.value,
+        piecesLeft: piecesLeft.value,
+        playerType,
+        playerID,
+      };
+    };
     const isHuman = playerType === PlayerType.Human;
     const isComputer = playerType === PlayerType.Computer;
     const availablePieces = computed(() => {
@@ -75,6 +86,8 @@ const playerFactory = () => {
       isComputer,
       reducePiece,
       availablePieces,
+      toJson,
+      playerID,
     };
   };
 };
@@ -85,9 +98,17 @@ const humanPlayerFactory = () => {
     name: string,
     colour: string,
     pieces: Ref<Array<Array<boolean>>>,
-    piecesLeft: Ref<Array<number>>
+    piecesLeft: Ref<Array<number>>,
+    playerID = ""
   ) {
-    return factory(PlayerType.Human, name, colour, pieces, piecesLeft);
+    return factory(
+      PlayerType.Human,
+      name,
+      colour,
+      pieces,
+      piecesLeft,
+      playerID
+    );
   };
 };
 
@@ -97,14 +118,35 @@ const computerPlayerFactory = () => {
     name: string,
     colour: string,
     pieces: Ref<Array<Array<boolean>>>,
-    piecesLeft: Ref<Array<number>>
+    piecesLeft: Ref<Array<number>>,
+    playerID = ""
   ) {
-    return factory(PlayerType.Computer, name, colour, pieces, piecesLeft);
+    return factory(
+      PlayerType.Computer,
+      name,
+      colour,
+      pieces,
+      piecesLeft,
+      playerID
+    );
   };
+};
+
+const fromJSON = (json: Object) => {
+  const factory = playerFactory();
+  return factory(
+    json.playerType,
+    json.name,
+    json.colour,
+    ref(json.pieces),
+    ref(json.piecesLeft),
+    json.playerID
+  );
 };
 
 export default function () {
   const humanPlayer = humanPlayerFactory();
   const computerPlayer = computerPlayerFactory();
-  return { humanPlayer, computerPlayer };
+  const factory = playerFactory();
+  return { humanPlayer, computerPlayer, playerFactory: factory, fromJSON };
 }

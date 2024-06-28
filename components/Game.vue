@@ -5,13 +5,17 @@ const props = defineProps({
   game: Object,
 });
 
-console.log(props.game.isOver.value)
-
 const thinking = ref(false);
 
 const skippingTurn = ref(false);
 
 const pieceChoiceIndex = ref(0);
+
+while (
+  props.game.activePlayer.value.piecesLeft.value[pieceChoiceIndex.value] === 0
+) {
+  pieceChoiceIndex.value++;
+}
 
 const activePiece = computed(
   () => props.game.activePlayer.value.pieces.value[pieceChoiceIndex.value]
@@ -73,7 +77,9 @@ const placePiece = async (x, y, piece, colour) => {
   // limited area and break the height and width restrictions
   await nextTick();
   pieceChoiceIndex.value = 0;
-  while (props.game.activePlayer.value.piecesLeft.value[pieceChoiceIndex.value] === 0) {
+  while (
+    props.game.activePlayer.value.piecesLeft.value[pieceChoiceIndex.value] === 0
+  ) {
     pieceChoiceIndex.value++;
   }
   await updateGame();
@@ -135,10 +141,17 @@ await updateGame();
 <template>
   <div class="flex flex-col w-full h-screen justify-center items-center">
     <div class="flex flex-row gap-2">
-      <span v-if="!game.isOver.value">{{ game.activePlayer.value.name }}'s turn</span>
-      <span v-if="thinking">Thinking...</span>
-      <span v-if="skippingTurn">Can't go, skipping turn...</span>
       <span v-if="game.isOver.value">{{ game.getWinner()?.name }} wins!</span>
+      <span v-else-if="skippingTurn">
+        {{ game.activePlayer.value.name }} can't make a legal move, skipping
+        turn...
+      </span>
+      <template v-else>
+        <span v-if="game.currentPlayersMove.value"
+          >Your turn, {{ game.activePlayer.value.name }}!</span
+        >
+        <span v-else>{{ game.activePlayer.value.name }} is thinking...</span>
+      </template>
     </div>
     <div class="flex flex-row gap-2">
       <div class="grid grid-cols-8 justify-center items-center gap-2 h-24">
@@ -193,7 +206,9 @@ await updateGame();
         <Piece :cells="piece.piece" :colour="piece.colour" />
       </div>
       <vue-draggable-resizable
-        v-if="!thinking && !skippingTurn && !game.isOver.value"
+        v-if="
+          game.currentPlayersMove.value && !skippingTurn && !game.isOver.value
+        "
         :parent="true"
         :grid="[gridCellPixels, gridCellPixels]"
         :resizable="false"
@@ -217,7 +232,7 @@ await updateGame();
         @click="placeActivePiece"
         class="text-white py-2 px-3 rounded-lg"
         :class="canPlacePiece ? 'bg-blue-500' : 'bg-gray-500'"
-        :disabled="!canPlacePiece"
+        :disabled="!canPlacePiece && !game.isOver.value && !skippingTurn && game.currentPlayersMove.value"
       >
         Confirm piece
       </button>

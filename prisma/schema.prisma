@@ -1,0 +1,16 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:postgres@postgres:5432/mydb?schema=sample"
+}
+
+model Game {
+  id            String   @id @default(uuid()) @db.Uuid
+  createdAt     DateTime @default(now())
+  playerOneSlug String   @unique @default(uuid())
+  playerTwoSlug String   @unique @default(uuid())
+  gameState     Json     @default("{}")
+}

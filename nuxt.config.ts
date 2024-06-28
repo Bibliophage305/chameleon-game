@@ -1,7 +1,13 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
-  modules: ["@nuxtjs/tailwindcss"],
+  modules: ["@nuxtjs/tailwindcss", "@prisma/nuxt"],
+  runtimeConfig: {
+    public: {
+      origin: process.env.ORIGIN,
+    },
+  },
+
   tailwindcss: {
     config: {
       safelist: [
