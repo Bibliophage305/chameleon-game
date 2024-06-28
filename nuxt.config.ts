@@ -2,6 +2,9 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ["@nuxtjs/tailwindcss", "@prisma/nuxt"],
+  prisma: {
+    generateClient: false,
+  },
   runtimeConfig: {
     public: {
       origin: process.env.ORIGIN,
