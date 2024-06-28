@@ -5,6 +5,8 @@ const props = defineProps({
   game: Object,
 });
 
+const { GameType } = useGame();
+
 const thinking = ref(false);
 
 const skippingTurn = ref(false);
@@ -131,11 +133,21 @@ const onDrag = (x, y) => {
   pieceY.value = y / gridCellPixels.value;
 };
 
+const currentPlayersMove = computed(() => {
+  switch (props.game.gameType.value) {
+    case GameType.LocalPVP:
+      return props.game.activePlayer.value.isHuman;
+    case GameType.Computer:
+      return props.game.activePlayer.value.isHuman;
+    case GameType.RemotePVP:
+      const route = useRoute();
+      return route.params.id == props.game.activePlayer.value.playerID;
+  }
+});
+
 const buttonsAreActive = computed(
   () =>
-    !props.game.isOver.value &&
-    !skippingTurn.value &&
-    props.game.currentPlayersMove.value
+    !props.game.isOver.value && !skippingTurn.value && currentPlayersMove.value
 );
 
 const updateGame = async () => {
@@ -170,7 +182,7 @@ await updateGame();
         turn...
       </span>
       <template v-else>
-        <span v-if="game.currentPlayersMove.value"
+        <span v-if="currentPlayersMove"
           >Your turn, {{ game.activePlayer.value.name }}!</span
         >
         <span v-else>{{ game.activePlayer.value.name }} is thinking...</span>
@@ -245,9 +257,7 @@ await updateGame();
         <Piece :cells="piece.piece" :colour="piece.colour" />
       </div>
       <vue-draggable-resizable
-        v-if="
-          game.currentPlayersMove.value && !skippingTurn && !game.isOver.value
-        "
+        v-if="currentPlayersMove && !skippingTurn && !game.isOver.value"
         :parent="true"
         :grid="[gridCellPixels, gridCellPixels]"
         :resizable="false"
