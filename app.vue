@@ -6,3 +6,9 @@
     </NuxtLayout>
   </Html>
 </template>
+
+<style>
+html {
+  overscroll-behavior: none;
+}
+</style>

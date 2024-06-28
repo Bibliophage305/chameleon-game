@@ -23,6 +23,15 @@ const activePiece = computed(
 
 const gridCellPixels = ref(50);
 
+const setGridCellPixels = (width) => {
+  const maxGridCellPixels = Math.max(1, (width - 20) / 9);
+  gridCellPixels.value = Math.min(maxGridCellPixels, 50);
+};
+
+const { width } = useWindowWidth();
+watch(width, setGridCellPixels);
+onMounted(() => setGridCellPixels(width.value));
+
 const pieceX = ref(0);
 const pieceY = ref(0);
 
@@ -139,7 +148,7 @@ await updateGame();
 </style>
 
 <template>
-  <div class="flex flex-col w-full h-screen justify-center items-center">
+  <div class="flex flex-col w-full justify-center items-center mt-2 gap-2">
     <div class="flex flex-row gap-2">
       <span v-if="game.isOver.value">{{ game.getWinner()?.name }} wins!</span>
       <span v-else-if="skippingTurn">
@@ -153,8 +162,10 @@ await updateGame();
         <span v-else>{{ game.activePlayer.value.name }} is thinking...</span>
       </template>
     </div>
-    <div class="flex flex-row gap-2">
-      <div class="grid grid-cols-8 justify-center items-center gap-2 h-24">
+    <div class="flex flex-col gap-3 mx-2">
+      <div
+        class="grid grid-cols-4 md:grid-cols-8 justify-center items-center gap-2 h-40 md:h-24"
+      >
         <div
           v-for="(piece, index) in game.activePlayer.value.pieces.value"
           :key="index"
@@ -170,19 +181,34 @@ await updateGame();
           x{{ game.activePlayer.value.piecesLeft.value[index] }}
         </div>
       </div>
-      <button
-        class="flex flex-col items-center justify-center"
-        @click="rotatePieces"
-      >
-        Rotate Pieces
-      </button>
+      <div class="flex flex-row items-center justify-center gap-6">
+        <button
+          @click="rotatePieces"
+          class="text-white py-2 px-3 rounded-lg bg-blue-500"
+        >
+          Rotate Pieces
+        </button>
+        <button
+          @click="placeActivePiece"
+          class="text-white py-2 px-3 rounded-lg"
+          :class="canPlacePiece ? 'bg-blue-500' : 'bg-gray-500'"
+          :disabled="
+            !canPlacePiece &&
+            !game.isOver.value &&
+            !skippingTurn &&
+            game.currentPlayersMove.value
+          "
+        >
+          Confirm piece
+        </button>
+      </div>
     </div>
     <div
       :style="{
         height: `${gridCellPixels * 9}px`,
         width: `${gridCellPixels * 9}px`,
       }"
-      class="border border-blue-500 m-4 bg-slate-300 relative"
+      class="border border-blue-500 bg-slate-300 relative"
     >
       <div
         class="absolute w-full h-full grid grid-rows-9 grid-cols-9"
@@ -226,16 +252,6 @@ await updateGame();
           :borderColour="canPlacePiece ? 'black' : 'red'"
         />
       </vue-draggable-resizable>
-    </div>
-    <div class="flex flex-row w-full justify-center items-center">
-      <button
-        @click="placeActivePiece"
-        class="text-white py-2 px-3 rounded-lg"
-        :class="canPlacePiece ? 'bg-blue-500' : 'bg-gray-500'"
-        :disabled="!canPlacePiece && !game.isOver.value && !skippingTurn && game.currentPlayersMove.value"
-      >
-        Confirm piece
-      </button>
     </div>
   </div>
 </template>
