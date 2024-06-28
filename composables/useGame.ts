@@ -15,18 +15,6 @@ const gameFactory = () => {
       turn.value = value;
     };
 
-    const setPlacedPieces = async (pieces: Array<any>) => {
-      placedPieces.splice(0, placedPieces.length);
-      for (const key in occupiedCells) {
-        delete occupiedCells[key];
-      }
-      for (const piece of pieces) {
-        placePiece(piece.x, piece.y, piece.piece, piece.colour);
-        // wait a second before placing the next piece
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-    };
-
     const setPlayers = (playerOne: Object, playerTwo: Object) => {
       const { playerFactory } = usePlayer();
       players[0] = playerFactory(
@@ -141,6 +129,22 @@ const gameFactory = () => {
       return true;
     };
 
+    const setPlacedPieces = (pieces: Array<any>) => {
+      placedPieces.splice(0, placedPieces.length);
+      for (const piece of pieces) {
+        placedPieces.push(piece);
+      }
+    };
+
+    const setOccupiedCells = (cells: { [key: number]: number }) => {
+      for (const key in occupiedCells) {
+        delete occupiedCells[key];
+      }
+      for (const key in cells) {
+        occupiedCells[key] = cells[key];
+      }
+    };
+
     const legalMoves = (player: Object) => {
       const availableMoves = [];
       for (const piece of player.availablePieces.value) {
@@ -214,6 +218,7 @@ const gameFactory = () => {
       currentPlayersMove,
       setTurn,
       setPlacedPieces,
+      setOccupiedCells,
       setPlayers,
       gameType,
     };

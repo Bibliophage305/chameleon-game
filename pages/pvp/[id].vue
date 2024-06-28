@@ -12,7 +12,8 @@ const game = constructGame(
   GameType.RemotePVP
 );
 game.setTurn(gameStateParsed.turn);
-await game.setPlacedPieces(gameStateParsed.placedPieces);
+game.setPlacedPieces(gameStateParsed.placedPieces);
+game.setOccupiedCells(gameStateParsed.occupiedCells);
 watch(game.turn, async () => {
   await $fetch(`/api/game/${route.params.id}`, {
     method: "POST",
@@ -44,9 +45,12 @@ const copyOpponentLink = () => {
 const updateBoard = async () => {
   if (game.activePlayer.value.playerID !== route.params.id) {
     const gameState = await $fetch(`/api/game/${route.params.id}`);
-    game.setTurn(gameState.gameState.turn);
-    await game.setPlacedPieces(gameState.gameState.placedPieces);
-    game.setPlayers(...gameState.gameState.players);
+    if (gameState.gameState.turn !== game.turn.value) {
+      game.setTurn(gameState.gameState.turn);
+      game.setPlacedPieces(gameState.gameState.placedPieces);
+      game.setOccupiedCells(gameState.gameState.occupiedCells);
+      game.setPlayers(...gameState.gameState.players);
+    }
   }
   setTimeout(updateBoard, 5000);
 };
