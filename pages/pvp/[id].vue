@@ -42,7 +42,7 @@ const copyOpponentLink = () => {
 };
 
 const updateBoard = async () => {
-  if (!game.currentPlayersMove.value) {
+  if (game.activePlayer.value.playerID !== route.params.id) {
     const gameState = await $fetch(`/api/game/${route.params.id}`);
     game.setTurn(gameState.gameState.turn);
     game.setPlacedPieces(gameState.gameState.placedPieces);
