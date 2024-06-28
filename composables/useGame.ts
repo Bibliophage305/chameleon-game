@@ -15,14 +15,15 @@ const gameFactory = () => {
       turn.value = value;
     };
 
-    const setPlacedPieces = (pieces: Array<any>) => {
-      // clear the board
+    const setPlacedPieces = async (pieces: Array<any>) => {
       placedPieces.splice(0, placedPieces.length);
       for (const key in occupiedCells) {
         delete occupiedCells[key];
       }
       for (const piece of pieces) {
         placePiece(piece.x, piece.y, piece.piece, piece.colour);
+        // wait a second before placing the next piece
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     };
 
