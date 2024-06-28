@@ -5,6 +5,14 @@ export default defineNuxtConfig({
   prisma: {
     generateClient: false,
   },
+  vite: {
+    resolve: {
+      alias: {
+        ".prisma/client/index-browser":
+          "./node_modules/.prisma/client/index-browser.js",
+      },
+    },
+  },
   runtimeConfig: {
     public: {
       origin: process.env.ORIGIN,
