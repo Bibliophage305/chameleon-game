@@ -11,11 +11,18 @@ const skippingTurn = ref(false);
 
 const pieceChoiceIndex = ref(0);
 
-while (
-  props.game.activePlayer.value.piecesLeft.value[pieceChoiceIndex.value] === 0
-) {
-  pieceChoiceIndex.value++;
-}
+const findAllowedPieceIndex = () => {
+  while (
+    props.game.activePlayer.value.piecesLeft.value[pieceChoiceIndex.value] === 0
+  ) {
+    pieceChoiceIndex.value++;
+    pieceChoiceIndex.value %= props.game.activePlayer.value.pieces.value.length;
+  }
+};
+
+findAllowedPieceIndex();
+
+watch(props.game.turn, findAllowedPieceIndex);
 
 const activePiece = computed(
   () => props.game.activePlayer.value.pieces.value[pieceChoiceIndex.value]
