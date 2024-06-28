@@ -124,6 +124,13 @@ const onDrag = (x, y) => {
   pieceY.value = y / gridCellPixels.value;
 };
 
+const buttonsAreActive = computed(
+  () =>
+    !props.game.isOver.value &&
+    !skippingTurn.value &&
+    props.game.currentPlayersMove.value
+);
+
 const updateGame = async () => {
   if (props.game.isOver.value) {
     return;
@@ -184,20 +191,19 @@ await updateGame();
       <div class="flex flex-row items-center justify-center gap-6">
         <button
           @click="rotatePieces"
-          class="text-white py-2 px-3 rounded-lg bg-blue-500"
+          class="text-white py-2 px-3 rounded-lg"
+          :class="buttonsAreActive ? 'bg-blue-500' : 'bg-gray-500'"
+          :disabled="!buttonsAreActive"
         >
           Rotate Pieces
         </button>
         <button
           @click="placeActivePiece"
           class="text-white py-2 px-3 rounded-lg"
-          :class="canPlacePiece ? 'bg-blue-500' : 'bg-gray-500'"
-          :disabled="
-            !canPlacePiece &&
-            !game.isOver.value &&
-            !skippingTurn &&
-            game.currentPlayersMove.value
+          :class="
+            buttonsAreActive && canPlacePiece ? 'bg-blue-500' : 'bg-gray-500'
           "
+          :disabled="!buttonsAreActive || !canPlacePiece"
         >
           Confirm piece
         </button>
