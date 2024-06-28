@@ -42,10 +42,12 @@ const copyOpponentLink = () => {
 };
 
 const updateBoard = async () => {
-  const gameState = await $fetch(`/api/game/${route.params.id}`);
-  game.setTurn(gameState.gameState.turn);
-  game.setPlacedPieces(gameState.gameState.placedPieces);
-  game.setPlayers(...gameState.gameState.players);
+  if (!game.currentPlayersMove.value) {
+    const gameState = await $fetch(`/api/game/${route.params.id}`);
+    game.setTurn(gameState.gameState.turn);
+    game.setPlacedPieces(gameState.gameState.placedPieces);
+    game.setPlayers(...gameState.gameState.players);
+  }
   setTimeout(updateBoard, 5000);
 };
 
