@@ -8,7 +8,7 @@
 </template>
 
 <style>
-html {
+html, body {
   overscroll-behavior: none;
 }
 </style>
