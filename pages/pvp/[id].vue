@@ -55,7 +55,7 @@ updateBoard();
 <template>
   <div>
     <button
-      class="fixed top-0 right-0 m-4 p-2 bg-blue-500 text-white rounded"
+      class="fixed bottom-0 right-0 m-4 p-2 bg-blue-500 text-white rounded"
       @click="copyOpponentLink"
     >
       {{ justCopied ? "Copied!" : "Copy opponent's link to clipboard" }}
