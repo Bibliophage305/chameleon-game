@@ -134,7 +134,7 @@ const onDrag = (x, y) => {
 };
 
 const currentPlayersMove = computed(() => {
-  switch (props.game.gameType.value) {
+  switch (props.game.gameType) {
     case GameType.LocalPVP:
       return props.game.activePlayer.value.isHuman;
     case GameType.Computer:

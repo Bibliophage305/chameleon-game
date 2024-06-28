@@ -214,6 +214,7 @@ const gameFactory = () => {
       setTurn,
       setPlacedPieces,
       setPlayers,
+      gameType,
     };
   };
 };
